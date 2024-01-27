@@ -1,2 +1,0 @@
-AUTH=Watching-you-guest
-PASS=T3st1ing1=!

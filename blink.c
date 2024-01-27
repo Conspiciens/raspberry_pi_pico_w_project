@@ -6,8 +6,8 @@
 
 using namespace std; 
 
-char ssid[MAX] = "Watching-you-guest"; 
-char password[MAX] = "T3st1ng1=!"; 
+char ssid[MAX] = ""; 
+char password[MAX] = ""; 
 
 void turn_led_on(){
     cyw43_arch_gpio_put(
