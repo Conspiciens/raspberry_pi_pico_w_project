@@ -1,21 +1,25 @@
-c_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.13)
 
 include(pico_sdk_import.cmake)
 
-project(test_project C CXX ASM)
+project(pico_w_in_c C CXX ASM)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init() 
 
-add_executable(
-    blink blink.c
+add_executable(pico_w_in_c 
+    blink.c
 )
 
-pico_enable_stdio_usb(blink 1)
-pico_enable_stdio_uart(blink 1)
+target_include_directories(pico_w_in_c PRIVATE ${CMAKE_CURRENT_LIST_DIR} )
 
-pico_add_extra_outputs(blink)
+pico_enable_stdio_usb(pico_w_in_c 1)
+pico_enable_stdio_uart(pico_w_in_c 1)
 
-target_include_directories(blink PRIVATE ${CMAKE_CURRENT_LIST_DIR})
+pico_add_extra_outputs(pico_w_in_c)
 
-target_link_libraries(blink pico_cyw43_arch_lwip_threadsafe_background pico_stdlib)
+
+target_link_libraries(pico_w_in_c 
+    pico_stdlib
+    pico_cyw43_arch_lwip_threadsafe_background
+)
