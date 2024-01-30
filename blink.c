@@ -3,21 +3,21 @@
 #include "pico/cyw43_arch.h"
 #include "lwip/sockets.h"
 
-#define LEDLIGHT 25
+#define LEDPIN 25
 
 const char ssid[] = ""; 
 const char password[] = ""; 
 
 void turn_led_on(){
     gpio_put(
-        15, 
+        LEDPIN, 
         1
     ); 
 }
 
 void turn_led_off(){
     gpio_put(
-        15, 
+        LEDPIN, 
         0 
     );
 } 
@@ -26,8 +26,8 @@ int main() {
     /* Begin trasfering USB data over serial */
     stdio_init_all(); 
 
-    gpio_init(15); 
-    gpio_set_dir(15, GPIO_OUT); 
+    gpio_init(LEDPIN); 
+    gpio_set_dir(LEDPIN, GPIO_OUT); 
     
     turn_led_on(); 
     if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)){
