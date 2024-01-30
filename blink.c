@@ -1,48 +1,53 @@
 #include <stdio.h> 
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
+#include "lwip/sockets.h"
 
-#define MAX 20
+#define LEDLIGHT 25
 
-using namespace std; 
-
-char ssid[MAX] = ""; 
-char password[MAX] = ""; 
+const char ssid[] = ""; 
+const char password[] = ""; 
 
 void turn_led_on(){
-    cyw43_arch_gpio_put(
-        CYW43_WL_GPIO_LED_PIN, 
+    gpio_put(
+        15, 
         1
     ); 
 }
 
 void turn_led_off(){
-    cyw43_arch_gpio_put(
-        CYW43_WL_GPIO_LED_PIN, 
+    gpio_put(
+        15, 
         0 
     );
-}
+} 
 
 int main() {
-    FILE *fp; 
-    size_t charCount; 
-
     /* Begin trasfering USB data over serial */
     stdio_init_all(); 
 
+    gpio_init(15); 
+    gpio_set_dir(15, GPIO_OUT); 
     
-    if (cyw43_arch_init_with_country(CYW_43_COUNTRY_USA)){
-        prinf("Failed to initialized"); 
-        return; 
+    turn_led_on(); 
+    if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)){
+        printf("Failed to initialized"); 
+        return 0; 
     }
 
     cyw43_arch_enable_sta_mode(); 
 
-    if (cyw43_arch_init_connect_timeout_ms(ssid, pass, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+    if (cyw43_arch_wifi_connect_timeout_ms(ssid, password, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
         printf("Failed to connect"); 
-        return; 
+        return 0; 
     }
 
     printf("Connceted"); 
-
+    turn_led_on(); 
+    sleep_ms(2000);
+    turn_led_off(); 
+    sleep_ms(2000);
+    turn_led_on(); 
+    sleep_ms(2000); 
+    turn_led_off();
 } 
