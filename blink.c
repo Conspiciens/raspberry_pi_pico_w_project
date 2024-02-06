@@ -3,7 +3,7 @@
 #include "pico/cyw43_arch.h"
 #include "lwip/sockets.h"
 
-#define LEDPIN 25
+#define LEDPIN 15
 
 const char ssid[] = ""; 
 const char password[] = ""; 
@@ -22,27 +22,55 @@ void turn_led_off(){
     );
 } 
 
-void scanner(){
+/* Mini implementation of string cmp */
+bool simple_strcmp(const char *string1, const char *string2){
+    if (sizeof(string1) == sizeof(string2)){
+        for (int i = 0; i < sizeof(string1); i++){
+            if (string1[i] == string2[i]){
+                continue; 
+            } else {
+                return false; 
+            }
+        }
+        return true; 
+    } else {
+        return false; 
+    } 
+}
+
+/* Check whether the bssid is the same */
+int scan_function(void *context, const cyw43_ev_scan_result_t *scan_result){
+    if (simple_strcmp(scan_result->ssid, ssid) == true){
+        return 0; 
+    } 
+
+    return -1; 
+}
+
+
+void scanner(cyw43_t *init_wifi){
     cyw43_wifi_scan_options_t wifi_options; 
-    cyw43_t wifi_data; 
     cyw43_ev_scan_result_t scan_result; 
+    void *env; 
     int wifi_scan; 
     
-    cyw43_init(&wifi_data); 
 
+    turn_led_on();  
     /* Start the wifi scan */
-    wifi_scan = cyw43_wifi_scan(&wifi_data, &wifi_options, *void, &scan_result)
+    wifi_scan = cyw43_wifi_scan(init_wifi, &wifi_options, env, scan_function);
     if (wifi_scan < 0){
-        print("Failed to start scanning"); 
+        printf("Failed to start scanning"); 
         return; 
     }
+    turn_led_off();
 
     /* Scan for any local wifi and wait till complete */
-    while (cyw43_wifi_scan_active(wifi_data)) {
-        print("Scanning..."); 
+    while (cyw43_wifi_scan_active(init_wifi)) {
+        turn_led_on();
+        printf("Scanning..."); 
+        turn_led_off(); 
     }
 
-    print(scan_result.bssid[0]); 
 }
 
 void connect_to_wifi(){
@@ -61,11 +89,15 @@ void connect_to_wifi(){
     printf("Connected to wifi"); 
 }
 
-void check_wifi_strength(){
-    cy43_t wifi; 
+void disconnect_from_wifi(){
+    int wifi_dis; 
+    return; 
+}
+
+void check_wifi_strength(cyw43_t *init_wifi){
     int32_t rssi; 
 
-    int int_rssi = cyw43_wifi_get_rssi(&wifi, &rssi); 
+    int int_rssi = cyw43_wifi_get_rssi(init_wifi, &rssi); 
 
     if (int_rssi){
         printf("Failed to get rssi value"); 
@@ -79,19 +111,26 @@ void check_wifi_strength(){
     return; 
 }
 
-void disconnect_from_wifi(){
-    
-
-}
-
 int main() {
-    /* Begin trasfering USB data over serial */
+    cyw43_t init_wifi; 
+
+    /* Stdio library initalize */
     stdio_init_all(); 
+
 
     gpio_init(LEDPIN); 
     gpio_set_dir(LEDPIN, GPIO_OUT); 
+
+    turn_led_on();
+    sleep_ms(5000); 
+    turn_led_off(); 
+
+    
     
     turn_led_on(); 
+    cyw43_init(&init_wifi); 
+    scanner(&init_wifi);
+
     if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)){
         printf("Failed to initialized"); 
         return 0; 
@@ -103,13 +142,5 @@ int main() {
         printf("Failed to connect"); 
         return 0; 
     }
-
-    printf("Connceted"); 
-    turn_led_on(); 
-    sleep_ms(2000);
-    turn_led_off(); 
-    sleep_ms(2000);
-    turn_led_on(); 
-    sleep_ms(2000); 
     turn_led_off();
 } 
