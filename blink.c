@@ -89,8 +89,16 @@ void connect_to_wifi(){
     printf("Connected to wifi"); 
 }
 
-void disconnect_from_wifi(){
-    int wifi_dis; 
+void disconnect_from_wifi(cyw43_t *init_wifi){
+    int isLeave; 
+
+    isLeave = cyw43_wifi_leave(init_wifi, CYW43_ITF_AP); 
+    if (isLeave){
+        printf("Failed to leave the wifi");
+        return; 
+    }
+
+    printf("Disconnected from wifi");
     return; 
 }
 
