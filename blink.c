@@ -40,6 +40,13 @@ bool simple_strcmp(const char *string1, const char *string2){
 
 /* Check whether the bssid is the same */
 int scan_function(void *context, const cyw43_ev_scan_result_t *scan_result){
+    printf("SSID: %s", scan_result->ssid);
+    if (scan_result){
+         printf("ssid: %-32s rssi: %4d chan: %3d mac: %02x:%02x:%02x:%02x:%02x:%02x sec: %u\n",
+            scan_result->ssid, scan_result->rssi, scan_result->channel,
+            scan_result->bssid[0], scan_result->bssid[1], scan_result->bssid[2], scan_result->bssid[3], scan_result->bssid[4], scan_result->bssid[5],
+            scan_result->auth_mode);
+    }
     if (simple_strcmp(scan_result->ssid, ssid) == true){
         return 0; 
     } 
@@ -48,24 +55,25 @@ int scan_function(void *context, const cyw43_ev_scan_result_t *scan_result){
 }
 
 
-void scanner(cyw43_t *init_wifi){
-    cyw43_wifi_scan_options_t wifi_options; 
+void scanner(){
+    cyw43_wifi_scan_options_t wifi_options = {0}; 
     cyw43_ev_scan_result_t scan_result; 
-    void *env; 
     int wifi_scan; 
     
 
     turn_led_on();  
-    /* Start the wifi scan */
-    wifi_scan = cyw43_wifi_scan(init_wifi, &wifi_options, env, scan_function);
-    if (wifi_scan < 0){
+    printf("Scanning...");
+    /* Start the wifi scan (interseting you don't need to initialize cyw43_state )*/
+    wifi_scan = cyw43_wifi_scan(&cyw43_state, &wifi_options, NULL, scan_function);
+    printf("%d",wifi_scan);
+    if (wifi_scan){
         printf("Failed to start scanning"); 
         return; 
     }
     turn_led_off();
 
     /* Scan for any local wifi and wait till complete */
-    while (cyw43_wifi_scan_active(init_wifi)) {
+    while (cyw43_wifi_scan_active(&cyw43_state)){ 
         turn_led_on();
         printf("Scanning..."); 
         turn_led_off(); 
@@ -113,7 +121,7 @@ void check_wifi_strength(cyw43_t *init_wifi){
     }
 
     if (rssi <= -85){
-       disconnect_from_wifi();  
+       disconnect_from_wifi(init_wifi);  
     }
 
     return; 
@@ -122,7 +130,7 @@ void check_wifi_strength(cyw43_t *init_wifi){
 int main() {
     cyw43_t init_wifi; 
 
-    /* Stdio library initalize */
+    /* Initalize I/O */
     stdio_init_all(); 
 
 
@@ -134,10 +142,20 @@ int main() {
     turn_led_off(); 
 
     
+
     
     turn_led_on(); 
-    cyw43_init(&init_wifi); 
-    scanner(&init_wifi);
+    if (cyw43_arch_init()){
+        printf("Failed to intialized"); 
+        return 0;
+    }
+
+    /* Enable sta mode */
+    cyw43_arch_enable_sta_mode(); 
+
+    printf("start");
+    scanner();
+    printf("end"); 
 
     if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)){
         printf("Failed to initialized"); 
