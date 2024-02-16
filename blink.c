@@ -2,10 +2,12 @@
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"
 #include "lwip/sockets.h"
+#include "hardware/vreg.h"
+#include "hardware/clocks.h"
 
 #define LEDPIN 15
 
-const char ssid[] = ""; 
+const char ssid[] = "Watching-you-home"; 
 const char password[] = ""; 
 
 void turn_led_on(){
@@ -40,18 +42,22 @@ bool simple_strcmp(const char *string1, const char *string2){
 
 /* Check whether the bssid is the same */
 int scan_function(void *context, const cyw43_ev_scan_result_t *scan_result){
-    printf("SSID: %s", scan_result->ssid);
     if (scan_result){
          printf("ssid: %-32s rssi: %4d chan: %3d mac: %02x:%02x:%02x:%02x:%02x:%02x sec: %u\n",
             scan_result->ssid, scan_result->rssi, scan_result->channel,
             scan_result->bssid[0], scan_result->bssid[1], scan_result->bssid[2], scan_result->bssid[3], scan_result->bssid[4], scan_result->bssid[5],
             scan_result->auth_mode);
     }
-    if (simple_strcmp(scan_result->ssid, ssid) == true){
-        return 0; 
-    } 
 
-    return -1; 
+    // if (simple_strcmp(scan_result->ssid, ssid) == true){
+    //     printf("The SSID Matches! \n");
+    //     printf("%s\n", scan_result->ssid);
+    //     printf("%s\n", ssid); 
+
+    //     return 0; 
+    // } 
+
+    return 0; 
 }
 
 
@@ -59,10 +65,9 @@ void scanner(){
     cyw43_wifi_scan_options_t wifi_options = {0}; 
     cyw43_ev_scan_result_t scan_result; 
     int wifi_scan; 
-    
 
-    turn_led_on();  
     printf("Scanning...");
+
     /* Start the wifi scan (interseting you don't need to initialize cyw43_state )*/
     wifi_scan = cyw43_wifi_scan(&cyw43_state, &wifi_options, NULL, scan_function);
     printf("%d",wifi_scan);
@@ -70,15 +75,12 @@ void scanner(){
         printf("Failed to start scanning"); 
         return; 
     }
-    turn_led_off();
 
     /* Scan for any local wifi and wait till complete */
-    while (cyw43_wifi_scan_active(&cyw43_state)){ 
-        turn_led_on();
+    if (cyw43_wifi_scan_active(&cyw43_state)){ 
         printf("Scanning..."); 
-        turn_led_off(); 
-    }
-
+        sleep_ms(10000);
+    } 
 }
 
 void connect_to_wifi(){
@@ -142,8 +144,6 @@ int main() {
     turn_led_off(); 
 
     
-
-    
     turn_led_on(); 
     if (cyw43_arch_init()){
         printf("Failed to intialized"); 
@@ -157,16 +157,18 @@ int main() {
     scanner();
     printf("end"); 
 
-    if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)){
-        printf("Failed to initialized"); 
-        return 0; 
-    }
+    // if (cyw43_arch_init_with_country(CYW43_COUNTRY_USA)){
+    //     printf("Failed to initialized"); 
+    //     return 0; 
+    // }
 
-    cyw43_arch_enable_sta_mode(); 
+    // cyw43_arch_enable_sta_mode(); 
 
-    if (cyw43_arch_wifi_connect_timeout_ms(ssid, password, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
-        printf("Failed to connect"); 
-        return 0; 
-    }
+    // if (cyw43_arch_wifi_connect_timeout_ms(ssid, password, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
+    //     printf("Failed to connect"); 
+    //     return 0; 
+    // }
+
+    cyw43_arch_deinit(); 
     turn_led_off();
 } 
