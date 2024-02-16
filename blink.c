@@ -7,7 +7,7 @@
 
 #define LEDPIN 15
 
-const char ssid[] = "Watching-you-home"; 
+const char ssid[] = ""; 
 const char password[] = ""; 
 
 void turn_led_on(){
@@ -25,9 +25,9 @@ void turn_led_off(){
 } 
 
 /* Mini implementation of string cmp */
-bool simple_strcmp(const char *string1, const char *string2){
-    if (sizeof(string1) == sizeof(string2)){
-        for (int i = 0; i < sizeof(string1); i++){
+bool simple_strcmp(const char string1[], const char string2[]){
+    if (strlen(string1) == strlen(string2)){
+        for (int i = 0; i < strlen(string1); i++){
             if (string1[i] == string2[i]){
                 continue; 
             } else {
@@ -49,13 +49,13 @@ int scan_function(void *context, const cyw43_ev_scan_result_t *scan_result){
             scan_result->auth_mode);
     }
 
-    // if (simple_strcmp(scan_result->ssid, ssid) == true){
-    //     printf("The SSID Matches! \n");
-    //     printf("%s\n", scan_result->ssid);
-    //     printf("%s\n", ssid); 
+    if (simple_strcmp(scan_result->ssid, ssid) == true){
+        printf("The SSID Matches! \n");
+        printf("%s\n", scan_result->ssid);
+        printf("%s\n", ssid); 
 
-    //     return 0; 
-    // } 
+        return 0; 
+    } 
 
     return 0; 
 }
